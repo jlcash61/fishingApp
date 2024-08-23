@@ -21,6 +21,9 @@ auth.onAuthStateChanged(user => {
         document.getElementById('sign-in-btn').style.display = 'none';
         document.getElementById('sign-out-btn').style.display = 'block';
         
+        // Hide the sign-in page if it's visible
+        document.getElementById('sign-in-page').style.display = 'none';
+
         // Show user location and load their fishing spots
         showUserLocationAndData(user.uid);
     } else {
@@ -32,7 +35,7 @@ auth.onAuthStateChanged(user => {
 
 // Sign-In Button
 document.getElementById('sign-in-btn').addEventListener('click', () => {
-    showSignInPage();  // Implement this function to show the sign-in options
+    showSignInPage();
 });
 
 // Sign-Out Button
@@ -44,22 +47,75 @@ document.getElementById('sign-out-btn').addEventListener('click', () => {
     });
 });
 
-// Sign-In Functionality
+// Show the custom sign-in page
 function showSignInPage() {
-    // Implement a sign-in page with options for Google and email/password sign-in
-    // For Google Sign-In:
+    document.getElementById('sign-in-page').style.display = 'block';
+}
+
+// Handle Google Sign-In
+document.getElementById('google-sign-in').addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).then(result => {
         alert('Signed in with Google!');
+        document.getElementById('sign-in-page').style.display = 'none';  // Hide sign-in page on success
     }).catch(error => {
         console.error('Google sign-in error:', error);
     });
+});
 
-    // For Email/Password Sign-In, use FirebaseUI or custom UI elements
-}
+// Handle Email/Password Sign-In
+document.getElementById('email-sign-in-form').addEventListener('submit', (e) => {
+    e.preventDefault();  // Prevent form submission from reloading the page
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    auth.signInWithEmailAndPassword(email, password).then(result => {
+        alert('Signed in with Email/Password!');
+        document.getElementById('sign-in-page').style.display = 'none';  // Hide sign-in page on success
+    }).catch(error => {
+        console.error('Email/Password sign-in error:', error);
+        alert('Error: ' + error.message);
+    });
+});
+
+// Toggle to Sign-Up Form (for users who don't have an account)
+document.getElementById('sign-up-link').addEventListener('click', () => {
+    document.getElementById('sign-in-page').innerHTML = `
+        <h2>Sign Up</h2>
+        <form id="email-sign-up-form">
+            <input type="email" id="sign-up-email" placeholder="Email" required>
+            <input type="password" id="sign-up-password" placeholder="Password" required>
+            <button type="submit">Sign up with Email/Password</button>
+        </form>
+        <br>
+        <a href="#" id="back-to-sign-in-link">Already have an account? Sign in</a>
+    `;
+
+    // Handle Email/Password Sign-Up
+    document.getElementById('email-sign-up-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('sign-up-email').value;
+        const password = document.getElementById('sign-up-password').value;
+
+        auth.createUserWithEmailAndPassword(email, password).then(result => {
+            alert('Account created and signed in!');
+            document.getElementById('sign-in-page').style.display = 'none';  // Hide sign-up page on success
+        }).catch(error => {
+            console.error('Sign-up error:', error);
+            alert('Error: ' + error.message);
+        });
+    });
+
+    // Handle back to sign-in link
+    document.getElementById('back-to-sign-in-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        showSignInPage();  // Show the original sign-in form
+    });
+});
+
 
 // Initialize the map
-var map = L.map('map').setView([0, 0], 13);  // Default view
+var map = L.map('map').setView([39, -98], 3);  // Default view
 
 // Load OpenStreetMap tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

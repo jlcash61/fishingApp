@@ -135,4 +135,44 @@ body {
         padding: 15px;
     }
 }
+
+/* Center the Sign-In/Sign-Up form */
+#sign-in-page {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    z-index: 2000; /* Ensure it is above other elements */
+    width: 300px; /* Adjust width as needed */
+}
+
+/* Ensure that the input fields and buttons are full-width */
+#sign-in-page input[type="email"],
+#sign-in-page input[type="password"],
+#sign-in-page button {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Center the text */
+#sign-in-page h2 {
+    text-align: center;
+}
+
+#sign-in-page a {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+#sign-in-page a:hover {
+    text-decoration: underline;
+}
+
   
