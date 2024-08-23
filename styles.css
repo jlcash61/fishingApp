@@ -14,7 +14,7 @@ body {
     text-align: center;
     line-height: 1.5;  /* Adjust line-height for better spacing */
     padding: 10px;
-    z-index: 1000;
+    z-index: 1100;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -38,9 +38,9 @@ body {
 /* Sidebar adjustments */
 #sidebar {
     position: fixed;
-    top: 85px;
+    top: 80px;
     left: 0;
-    width: 200px;
+    width: 150px;
     height: calc(100% - 50px);
     background-color: #444;
     color: white;
@@ -52,10 +52,10 @@ body {
 
 #map {
     position: absolute;
-    top: 85px;
-    left: 200px;
+    top: 80px;
+    left: 150px;
     height: calc(100% - 50px);
-    width: calc(100% - 200px);
+    width: calc(100% - 150px);
 }
 
 /* Style for sidebar buttons */
@@ -68,7 +68,7 @@ body {
     border: none;
     width: 100%;
     cursor: pointer;
-    text-align: left;
+    text-align: center;
 }
 
 .sidebar-button:hover {
