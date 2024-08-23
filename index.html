@@ -20,12 +20,28 @@
         </div>
     </div>
     
+    <!-- Sign-In Page -->
+<div id="sign-in-page" style="display:none;">
+    <h2>Sign In</h2>
+    <button id="google-sign-in">Sign in with Google</button>
+    <br><br>
+    <form id="email-sign-in-form">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button type="submit">Sign in with Email/Password</button>
+    </form>
+    <br>
+    <a href="#" id="sign-up-link">Don't have an account? Sign up</a>
+</div>
 
     <div id="sidebar">
-        <button id="add-btn" class="sidebar-button">Add</button>
-        <button id="edit-btn" class="sidebar-button">Edit</button>
-        <button id="delete-btn" class="sidebar-button">Delete</button>
-        <button id="done-btn" class="sidebar-button" style="display: none;">Done</button>
+        <button id="sign-in-btn">Sign In</button>
+        <button id="sign-out-btn" style="display:none;">Sign Out</button>
+        <!-- Add, Edit, Delete buttons remain the same -->
+        <button id="add-btn">Add</button>
+        <button id="edit-btn">Edit</button>
+        <button id="delete-btn">Delete</button>
+        <button id="done-btn" style="display:none;">Done</button>
     </div>
 
     <div id="map"></div>
@@ -34,8 +50,9 @@
     <!-- Add Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
 
-    <script src="script.js?v=1.7"></script>
+    <script src="script.js?v=2.0"></script>
 </body>
 
 </html>

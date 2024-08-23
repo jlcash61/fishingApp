@@ -12,6 +12,51 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+// Initialize Firebase Authentication
+const auth = firebase.auth();
+
+// Listen for authentication state changes
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('sign-in-btn').style.display = 'none';
+        document.getElementById('sign-out-btn').style.display = 'block';
+        
+        // Show user location and load their fishing spots
+        showUserLocationAndData(user.uid);
+    } else {
+        document.getElementById('sign-in-btn').style.display = 'block';
+        document.getElementById('sign-out-btn').style.display = 'none';
+        clearMap();
+    }
+});
+
+// Sign-In Button
+document.getElementById('sign-in-btn').addEventListener('click', () => {
+    showSignInPage();  // Implement this function to show the sign-in options
+});
+
+// Sign-Out Button
+document.getElementById('sign-out-btn').addEventListener('click', () => {
+    auth.signOut().then(() => {
+        alert('Signed out successfully.');
+    }).catch(error => {
+        console.error('Sign out error:', error);
+    });
+});
+
+// Sign-In Functionality
+function showSignInPage() {
+    // Implement a sign-in page with options for Google and email/password sign-in
+    // For Google Sign-In:
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(result => {
+        alert('Signed in with Google!');
+    }).catch(error => {
+        console.error('Google sign-in error:', error);
+    });
+
+    // For Email/Password Sign-In, use FirebaseUI or custom UI elements
+}
 
 // Initialize the map
 var map = L.map('map').setView([0, 0], 13);  // Default view
@@ -71,28 +116,44 @@ function hideDoneButton() {
 }
 
 // Get user location and update the map view
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function (position) {
-        var lat = position.coords.latitude;
-        var lng = position.coords.longitude;
+function showUserLocationAndData(userId) {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
 
-        map.setView([lat, lng], 13);  // Set map view to user's location
+            // Set map view to user's location
+            map.setView([lat, lng], 13);
 
-        // Add a marker at the user's location
-        L.marker([lat, lng]).addTo(map)
-            .bindPopup('You are here!')
-            .openPopup();
+            // Add a marker at the user's location
+            L.marker([lat, lng]).addTo(map)
+                .bindPopup('You are here!')
+                .openPopup();
 
-        // Fetch and display weather and astronomy information
-        fetchWeatherAndAstronomy(lat, lng);
+            // Fetch and display weather and astronomy information
+            fetchWeatherAndAstronomy(lat, lng);
 
-    }, function () {
-        alert('Geolocation failed or was denied.');
-    });
-} else {
-    alert('Geolocation is not supported by this browser.');
+            // Load fishing spots for the logged-in user
+            loadUserData(userId);
+        }, function () {
+            alert('Geolocation failed or was denied.');
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
 }
 
+// Clear the map of markers
+function clearMap() {
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+        }
+    });
+
+    // Optionally clear the weather and astronomy information if logged out
+    document.getElementById('weather-info').innerText = '';
+}
 
 // Add a marker on click when in 'add' mode
 map.on('click', function (e) {
@@ -117,8 +178,9 @@ map.on('click', function (e) {
                 <b>Time:</b> ${timestamp}
             `).openPopup();
 
-        // Save the fishing spot to Firestore with the timestamp
+        // Save the fishing spot to Firestore with the user's UID
         db.collection("fishingSpots").add({
+            userId: auth.currentUser.uid, // Save the user's UID
             latitude: lat,
             longitude: lng,
             fishType: fishType,
@@ -134,65 +196,68 @@ map.on('click', function (e) {
 });
 
 // Load existing fishing spots from Firestore
-db.collection("fishingSpots").get().then((querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const lat = data.latitude;
-        const lng = data.longitude;
-        const fishType = data.fishType;
-        const baitUsed = data.baitUsed;
-        const notes = data.notes;
-        const timestamp = data.timestamp.toDate().toLocaleString(); // Convert Firestore timestamp to readable format
+function loadUserData(userId) {
+    db.collection("fishingSpots").where("userId", "==", userId).get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const lat = data.latitude;
+            const lng = data.longitude;
+            const fishType = data.fishType;
+            const baitUsed = data.baitUsed;
+            const notes = data.notes;
+            const timestamp = data.timestamp.toDate().toLocaleString(); // Convert Firestore timestamp to readable format
 
-        // Add marker to the map for each fishing spot
-        const marker = L.marker([lat, lng]).addTo(map)
-            .bindPopup(`
-                <b>Fish:</b> ${fishType}<br>
-                <b>Bait:</b> ${baitUsed}<br>
-                <b>Notes:</b> ${notes}<br>
-                <b>Time:</b> ${timestamp}
-            `);
+            // Add marker to the map for each fishing spot
+            const marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup(`
+                    <b>Fish:</b> ${fishType}<br>
+                    <b>Bait:</b> ${baitUsed}<br>
+                    <b>Notes:</b> ${notes}<br>
+                    <b>Time:</b> ${timestamp}
+                `);
 
-        // Handle marker click based on the current mode (edit/delete)
-        marker.on('click', () => {
-            if (currentMode === 'edit') {
-                const newFishType = prompt("Enter the new type of fish:", fishType);
-                const newBaitUsed = prompt("Enter the new bait used:", baitUsed);
-                const newNotes = prompt("Enter any new notes:", notes);
+            // Handle marker click based on the current mode (edit/delete)
+            marker.on('click', () => {
+                if (currentMode === 'edit') {
+                    const newFishType = prompt("Enter the new type of fish:", fishType);
+                    const newBaitUsed = prompt("Enter the new bait used:", baitUsed);
+                    const newNotes = prompt("Enter any new notes:", notes);
 
-                // Update Firestore
-                db.collection("fishingSpots").doc(doc.id).update({
-                    fishType: newFishType,
-                    baitUsed: newBaitUsed,
-                    notes: newNotes,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()  // Update timestamp to current time
-                }).then(() => {
-                    marker.setPopupContent(`
-                        <b>Fish:</b> ${newFishType}<br>
-                        <b>Bait:</b> ${newBaitUsed}<br>
-                        <b>Notes:</b> ${newNotes}<br>
-                        <b>Time:</b> ${new Date().toLocaleString()}
-                    `);
-                    alert("Fishing spot updated successfully!");
-                }).catch(error => {
-                    alert("Error updating fishing spot: " + error.message);
-                });
-
-            } else if (currentMode === 'delete') {
-                if (confirm("Are you sure you want to delete this fishing spot?")) {
-                    // Delete from Firestore
-                    db.collection("fishingSpots").doc(doc.id).delete().then(() => {
-                        map.removeLayer(marker);
-                        alert("Fishing spot deleted successfully!");
+                    // Update Firestore
+                    db.collection("fishingSpots").doc(doc.id).update({
+                        fishType: newFishType,
+                        baitUsed: newBaitUsed,
+                        notes: newNotes,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()  // Update timestamp to current time
+                    }).then(() => {
+                        marker.setPopupContent(`
+                            <b>Fish:</b> ${newFishType}<br>
+                            <b>Bait:</b> ${newBaitUsed}<br>
+                            <b>Notes:</b> ${newNotes}<br>
+                            <b>Time:</b> ${new Date().toLocaleString()}
+                        `);
+                        alert("Fishing spot updated successfully!");
                     }).catch(error => {
-                        alert("Error deleting fishing spot: " + error.message);
+                        alert("Error updating fishing spot: " + error.message);
                     });
-                }
-            }
-        });
-    });
-});
 
+                } else if (currentMode === 'delete') {
+                    if (confirm("Are you sure you want to delete this fishing spot?")) {
+                        // Delete from Firestore
+                        db.collection("fishingSpots").doc(doc.id).delete().then(() => {
+                            map.removeLayer(marker);
+                            alert("Fishing spot deleted successfully!");
+                        }).catch(error => {
+                            alert("Error deleting fishing spot: " + error.message);
+                        });
+                    }
+                }
+            });
+        });
+    }).catch(error => {
+        console.error("Error loading fishing spots: ", error);
+    });
+}
 
 function fetchWeatherAndAstronomy(lat, lon) {
     const apiKey = 'e178ea07cb3554e3e318810f2a9c92da'; // Replace with your OpenWeatherMap API key
@@ -223,4 +288,3 @@ function getMoonPhase(phaseValue) {
     if (phaseValue === 0.75) return 'Last Quarter';
     if (phaseValue > 0.75 && phaseValue < 1) return 'Waning Crescent';
 }
-
