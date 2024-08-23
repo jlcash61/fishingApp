@@ -29,10 +29,15 @@ body {
 }
 
 #weather-info {
-    font-size: 12px;
-    white-space: normal;  /* Allow word wrapping */
-    overflow-wrap: break-word;  /* Break long words if needed */
-    text-overflow: ellipsis;
+    font-size: 14px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.5; /* Increase line spacing */
+    text-align: center; /* Center the text on small screens */
+}
+
+#weather-info div {
+    margin-bottom: 5px;
 }
 
 /* Sidebar adjustments */
@@ -92,8 +97,16 @@ body {
     #weather-info {
         font-size: 14px;
         margin-top: 5px;
-        white-space: normal;  /* Allow word wrapping on smaller screens */
+        white-space: normal;
         overflow-wrap: break-word;
+        text-align: center;
+        line-height: 1.5;
+    }
+
+    #weather-info div {
+        margin-bottom: 5px;
+        font-size: 14px;
+        text-align: center;
     }
 
     #sidebar {
