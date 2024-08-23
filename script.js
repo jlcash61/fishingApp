@@ -124,19 +124,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let currentMode = '';  // To track the current action mode
 
-// Fetch and display weather information
-function fetchWeather(lat, lon) {
-    const apiKey = 'e178ea07cb3554e3e318810f2a9c92da'; // Replace with your OpenWeatherMap API key
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=${apiKey}`;
-
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            const weatherInfo = `${data.weather[0].description}, ${data.main.temp}°F`;
-            document.getElementById('weather-info').innerText = weatherInfo;
-        })
-        .catch(error => console.error('Error fetching weather data:', error));
-}
 
 // Add event listeners for the sidebar buttons
 document.getElementById('add-btn').addEventListener('click', () => {
@@ -316,8 +303,9 @@ function loadUserData(userId) {
 }
 
 function fetchWeatherAndAstronomy(lat, lon) {
-    const apiKey = 'e178ea07cb3554e3e318810f2a9c92da'; // Replace with your OpenWeatherMap API key
-    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&units=imperial&appid=${apiKey}`;
+   
+    const url = `https://us-central1-catchntrack.cloudfunctions.net/getWeather?lat=${lat}&lon=${lon}`;
+
 
     fetch(url)
         .then(response => response.json())
