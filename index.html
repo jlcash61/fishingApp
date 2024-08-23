@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fishing Hole App</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <div id="top-panel">
+        <span>Fishing Hole App</span>
+        <span id="weather-info" style="float: right; padding-right: 20px;"></span>
+    </div>
+
+    <div id="sidebar">
+        <button id="add-btn" class="sidebar-button">Add</button>
+        <button id="edit-btn" class="sidebar-button">Edit</button>
+        <button id="delete-btn" class="sidebar-button">Delete</button>
+        <button id="done-btn" class="sidebar-button" style="display: none;">Done</button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
