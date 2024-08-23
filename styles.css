@@ -29,9 +29,9 @@ body {
 }
 
 #weather-info {
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
+    font-size: 12px;
+    white-space: normal;  /* Allow word wrapping */
+    overflow-wrap: break-word;  /* Break long words if needed */
     text-overflow: ellipsis;
 }
 
@@ -92,6 +92,8 @@ body {
     #weather-info {
         font-size: 14px;
         margin-top: 5px;
+        white-space: normal;  /* Allow word wrapping on smaller screens */
+        overflow-wrap: break-word;
     }
 
     #sidebar {
