@@ -38,6 +38,7 @@ body {
 
 #weather-info div {
     margin-bottom: 5px;
+    text-align: center; /* Center the text on small screens */
 }
 
 /* Sidebar adjustments */

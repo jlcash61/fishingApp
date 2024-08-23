@@ -94,6 +94,45 @@ if (navigator.geolocation) {
 }
 
 
+// Add a marker on click when in 'add' mode
+map.on('click', function (e) {
+    if (currentMode === 'add') {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        // Prompt user for details about the fishing spot
+        var fishType = prompt("Enter the type of fish caught:");
+        var baitUsed = prompt("Enter the bait used:");
+        var notes = prompt("Enter any additional notes:");
+
+        // Capture the current timestamp
+        var timestamp = new Date().toLocaleString();
+
+        // Add marker to the map
+        var marker = L.marker([lat, lng]).addTo(map)
+            .bindPopup(`
+                <b>Fish:</b> ${fishType}<br>
+                <b>Bait:</b> ${baitUsed}<br>
+                <b>Notes:</b> ${notes}<br>
+                <b>Time:</b> ${timestamp}
+            `).openPopup();
+
+        // Save the fishing spot to Firestore with the timestamp
+        db.collection("fishingSpots").add({
+            latitude: lat,
+            longitude: lng,
+            fishType: fishType,
+            baitUsed: baitUsed,
+            notes: notes,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("Fishing spot added successfully!");
+        }).catch((error) => {
+            alert("Error adding fishing spot: " + error.message);
+        });
+    }
+});
+
 // Load existing fishing spots from Firestore
 db.collection("fishingSpots").get().then((querySnapshot) => {
     querySnapshot.forEach((doc) => {
@@ -103,16 +142,18 @@ db.collection("fishingSpots").get().then((querySnapshot) => {
         const fishType = data.fishType;
         const baitUsed = data.baitUsed;
         const notes = data.notes;
+        const timestamp = data.timestamp.toDate().toLocaleString(); // Convert Firestore timestamp to readable format
 
         // Add marker to the map for each fishing spot
         const marker = L.marker([lat, lng]).addTo(map)
             .bindPopup(`
                 <b>Fish:</b> ${fishType}<br>
                 <b>Bait:</b> ${baitUsed}<br>
-                <b>Notes:</b> ${notes}
+                <b>Notes:</b> ${notes}<br>
+                <b>Time:</b> ${timestamp}
             `);
 
-        // Handle marker click based on the current mode
+        // Handle marker click based on the current mode (edit/delete)
         marker.on('click', () => {
             if (currentMode === 'edit') {
                 const newFishType = prompt("Enter the new type of fish:", fishType);
@@ -123,12 +164,14 @@ db.collection("fishingSpots").get().then((querySnapshot) => {
                 db.collection("fishingSpots").doc(doc.id).update({
                     fishType: newFishType,
                     baitUsed: newBaitUsed,
-                    notes: newNotes
+                    notes: newNotes,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()  // Update timestamp to current time
                 }).then(() => {
                     marker.setPopupContent(`
                         <b>Fish:</b> ${newFishType}<br>
                         <b>Bait:</b> ${newBaitUsed}<br>
-                        <b>Notes:</b> ${newNotes}
+                        <b>Notes:</b> ${newNotes}<br>
+                        <b>Time:</b> ${new Date().toLocaleString()}
                     `);
                     alert("Fishing spot updated successfully!");
                 }).catch(error => {
@@ -150,40 +193,6 @@ db.collection("fishingSpots").get().then((querySnapshot) => {
     });
 });
 
-// Add a marker on click when in 'add' mode
-map.on('click', function (e) {
-    if (currentMode === 'add') {
-        var lat = e.latlng.lat;
-        var lng = e.latlng.lng;
-
-        // Prompt user for details about the fishing spot
-        var fishType = prompt("Enter the type of fish caught:");
-        var baitUsed = prompt("Enter the bait used:");
-        var notes = prompt("Enter any additional notes:");
-
-        // Add marker to the map
-        var marker = L.marker([lat, lng]).addTo(map)
-            .bindPopup(`
-                <b>Fish:</b> ${fishType}<br>
-                <b>Bait:</b> ${baitUsed}<br>
-                <b>Notes:</b> ${notes}
-            `).openPopup();
-
-        // Save the fishing spot to Firestore
-        db.collection("fishingSpots").add({
-            latitude: lat,
-            longitude: lng,
-            fishType: fishType,
-            baitUsed: baitUsed,
-            notes: notes,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            alert("Fishing spot added successfully!");
-        }).catch((error) => {
-            alert("Error adding fishing spot: " + error.message);
-        });
-    }
-});
 
 function fetchWeatherAndAstronomy(lat, lon) {
     const apiKey = 'e178ea07cb3554e3e318810f2a9c92da'; // Replace with your OpenWeatherMap API key
